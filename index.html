@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trainingsapp</title>
+<meta name="theme-color" content="#16181B">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: één kolom, één scherm per stap (start, oefening, rust, einde); grote knoppen voor gebruik tijdens het trainen */
+:root{
+  --bg:#F2F1ED; --surface:#FFFFFF; --panel:#E8E6E0; --ink:#16181B; --muted:#555960; --line:#DCD9D1;
+  --push:#C2410C; --pull:#1D4ED8; --iso:#3F444B; --ok:#1F7A4D;
+  --bp:#1F4E8C; --bp-grid:rgba(255,255,255,.09);
+  --display:'Barlow Condensed','Arial Narrow',sans-serif;
+  --body:'Barlow',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121417; --surface:#1B1E22; --panel:#262A30; --ink:#ECEAE5; --muted:#A4A8AF; --line:#2E3238;
+  --push:#FB8A4C; --pull:#86A6FF; --iso:#C9CDD3; --ok:#4CC38A;
+  --bp:#1F4E8C; --bp-grid:rgba(255,255,255,.09); color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#121417; --surface:#1B1E22; --panel:#262A30; --ink:#ECEAE5; --muted:#A4A8AF; --line:#2E3238;
+  --push:#FB8A4C; --pull:#86A6FF; --iso:#C9CDD3; --ok:#4CC38A;
+  --bp:#1F4E8C; --bp-grid:rgba(255,255,255,.09); color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45}
+#app{min-height:100%;max-width:560px;margin:0 auto;padding-block:16px 20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:16px}
+button{font:inherit;color:inherit}
+button:focus-visible{outline:3px solid var(--pull);outline-offset:2px}
+.eyebrow{margin:0;font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.h1{margin:0;font-family:var(--display);font-weight:800;font-size:56px;line-height:.92;text-transform:uppercase;text-wrap:balance}
+.choice{appearance:none;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-left:0;border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:8px;cursor:pointer;position:relative;overflow:hidden}
+.choice::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--acc)}
+.choice .big{font-family:var(--display);font-weight:800;font-size:40px;line-height:1;text-transform:uppercase}
+.choice ol{margin:0;padding-left:20px;color:var(--muted);font-size:15px}
+.setting{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px 12px 18px}
+.setting b{font-weight:600}
+.stepper{display:flex;align-items:center;gap:6px}
+.stepper output{min-width:64px;text-align:center;font-family:var(--display);font-weight:700;font-size:26px;font-variant-numeric:tabular-nums}
+.round{appearance:none;width:48px;height:48px;border-radius:24px;border:1.5px solid var(--ink);background:transparent;font-size:24px;line-height:1;cursor:pointer}
+.resume{appearance:none;width:100%;border:0;border-radius:14px;background:var(--ok);color:#fff;padding:16px 18px;text-align:left;font-weight:600;font-size:17px;cursor:pointer}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.bar .meta{font-size:14px;font-weight:600;color:var(--muted)}
+.icon-btn{appearance:none;width:44px;height:44px;border-radius:22px;border:1px solid var(--line);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.icon-btn svg{stroke:var(--ink)}
+.progress{height:6px;border-radius:3px;background:var(--panel);overflow:hidden}
+.progress i{display:block;height:100%;background:var(--ink);border-radius:3px}
+.ill{border-radius:14px;display:flex;align-items:center;justify-content:center;background-color:var(--bp);background-image:linear-gradient(var(--bp-grid) 1px,transparent 1px),linear-gradient(90deg,var(--bp-grid) 1px,transparent 1px);background-size:14px 14px;background-position:center}
+.ill.lg{height:min(42vh,300px)}
+.ill.lg svg{width:100%;max-width:340px;height:100%}
+.ill.sm{width:96px;height:78px;flex:0 0 96px}
+.ill.sm svg{width:92px;height:74px}
+.ill line,.ill path{stroke-linecap:round;stroke-linejoin:round}
+.ex{display:flex;flex-direction:column;gap:6px}
+.tag{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--acc)}
+.name{margin:0;font-family:var(--display);font-weight:800;font-size:44px;line-height:1;text-transform:uppercase;text-wrap:balance}
+.dose{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.dose b{font-family:var(--display);font-weight:800;font-size:40px;line-height:1}
+.dose span{font-family:var(--display);font-weight:600;font-size:24px}
+.cue{margin:0;font-size:16px;color:var(--muted)}
+.spacer{flex:1}
+.primary{appearance:none;width:100%;min-height:64px;border:0;border-radius:16px;background:var(--ink);color:var(--bg);font-family:var(--display);font-weight:800;font-size:28px;letter-spacing:.04em;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer}
+.primary svg{stroke:var(--bg)}
+.secondary{appearance:none;min-height:48px;padding:0 18px;border-radius:24px;border:1.5px solid var(--ink);background:transparent;font-weight:600;font-size:16px;cursor:pointer}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.next{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.next .lbl{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.next .nm{font-family:var(--display);font-weight:700;font-size:24px;line-height:1.05;text-transform:uppercase}
+.ring{position:relative;width:min(72vw,260px);aspect-ratio:1;max-width:100%;margin:8px auto 0}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring .num b{font-family:var(--display);font-weight:800;font-size:84px;line-height:1;font-variant-numeric:tabular-nums}
+.ring .num span{font-size:14px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.stat b{display:block;font-family:var(--display);font-weight:800;font-size:40px;line-height:1;font-variant-numeric:tabular-nums}
+.stat span{font-size:14px;color:var(--muted)}
+.push{--acc:var(--push)} .pull{--acc:var(--pull)} .iso{--acc:var(--iso)}
+@media (prefers-reduced-motion: no-preference){.progress i{transition:width .3s ease}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function(){
+  /* ---------- illustraties (blauwdruk) ---------- */
+  var BG='#1F4E8C', LN='#EAF2FF', SOFT='#9EC2F0', WORK='#3F74BF', ARW='#FFFFFF';
+  function seg(s,c,w){return '<line x1="'+s[0]+'" y1="'+s[1]+'" x2="'+s[2]+'" y2="'+s[3]+'" stroke="'+c+'" stroke-width="'+w+'"></line>';}
+  function outlined(list,outer,inner,extra){var o='',i='';list.forEach(function(s){o+=seg(s,outer,s[4]+extra);i+=seg(s,inner,s[4]);});return o+i;}
+  function ghostLines(list){return list.map(function(s){return seg(s,SOFT,1.1);}).join('');}
+  function circ(x,y,r,fill,stroke,w,dash){return '<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+w+'"'+(dash?' stroke-dasharray="3 2.5"':'')+'></circle>';}
+  function rect(x,y,w,h,fill,stroke,sw,rx,dash){return '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="'+(rx||0)+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+sw+'"'+(dash?' stroke-dasharray="3 2.5"':'')+'></rect>';}
+  function HD(x,y,g){var f=g?'none':BG,s=g?SOFT:LN;return rect(x-11,y-2,22,4,f,s,1,0,g)+rect(x-12,y-7,6,14,f,s,1,1.5,g)+rect(x+6,y-7,6,14,f,s,1,1.5,g);}
+  function VD(x,y,g){var f=g?'none':BG,s=g?SOFT:LN;return rect(x-2,y-9,4,18,f,s,1,0,g)+rect(x-7,y-11,14,5,f,s,1,1.5,g)+rect(x-7,y+6,14,5,f,s,1,1.5,g);}
+  function DB(x,y,r,g){return circ(x,y,r||8,g?'none':BG,g?SOFT:LN,1.1,g);}
+  function UP(x,y1,y2){return '<path d="M'+x+' '+y1+' L'+x+' '+y2+' M'+(x-5)+' '+(y2+9)+' L'+x+' '+y2+' L'+(x+5)+' '+(y2+9)+'" fill="none" stroke="'+ARW+'" stroke-width="1.6"></path>';}
+  function CRV(d,head){return '<path d="'+d+'" fill="none" stroke="'+ARW+'" stroke-width="1.6"></path><path d="'+head+'" fill="none" stroke="'+ARW+'" stroke-width="1.6"></path>';}
+  function joints(list){var seen={},out='';list.forEach(function(s){[[s[0],s[1]],[s[2],s[3]]].forEach(function(p){var k=p[0]+','+p[1];if(!seen[k]){seen[k]=1;out+=circ(p[0],p[1],2.2,'none',LN,.8);}});});return out;}
+  function f1(n){return Math.round(n*10)/10;}
+  function pth(d,fill,stroke,w){return '<path d="'+d+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+w+'"></path>';}
+  var DIM={13:[17,11,2],12:[11,7,2.2],11:[13,9,1.5],10:[10,6.5,1],7:[7,5,0],8:[9,8,0]};
+  function limbD(s){
+    var x1=s[0],y1=s[1],x2=s[2],y2=s[3],dm=DIM[s[4]]||[s[4],s[4],0];
+    var dx=x2-x1,dy=y2-y1,L=Math.sqrt(dx*dx+dy*dy)||1,ux=dx/L,uy=dy/L,nx=-uy,ny=ux;
+    var r1=dm[0]/2,r2=dm[1]/2,b=dm[2],mx=(x1+x2)/2,my=(y1+y2)/2,mr=(r1+r2)/2+b;
+    var a1=[x1+nx*r1,y1+ny*r1],a2=[x1-nx*r1,y1-ny*r1],b1=[x2+nx*r2,y2+ny*r2],b2=[x2-nx*r2,y2-ny*r2];
+    var c1=[mx+nx*mr,my+ny*mr],c2=[mx-nx*mr,my-ny*mr];
+    return 'M'+f1(a1[0])+' '+f1(a1[1])+' Q'+f1(c1[0])+' '+f1(c1[1])+' '+f1(b1[0])+' '+f1(b1[1])
+      +' A'+f1(r2)+' '+f1(r2)+' 0 0 0 '+f1(b2[0])+' '+f1(b2[1])
+      +' Q'+f1(c2[0])+' '+f1(c2[1])+' '+f1(a2[0])+' '+f1(a2[1])
+      +' A'+f1(r1)+' '+f1(r1)+' 0 0 0 '+f1(a1[0])+' '+f1(a1[1])+' Z';
+  }
+  function torsoD(s,tw){
+    var Sx=s[0],Sy=s[1],Hx=s[2],Hy=s[3],dx=Hx-Sx,dy=Hy-Sy,L=Math.sqrt(dx*dx+dy*dy)||1,ux=dx/L,uy=dy/L,nx=-uy,ny=ux;
+    function P(t,w){return [Sx+ux*t+nx*w,Sy+uy*t+ny*w];}
+    var ws=tw[0],ww=tw[1],wh=tw[2];
+    var Lt=P(-3,ws),Rt=P(-3,-ws),Lw=P(L*.68,ww),Rw=P(L*.68,-ww),Lh=P(L+4,wh),Rh=P(L+4,-wh);
+    var c1=P(L*.3,ws+1),c2=P(L*.3,-ws-1),cb=P(L+9,0),ct=P(-11,0),cl=P(L*.86,wh+1),cr=P(L*.86,-wh-1);
+    function p(a){return f1(a[0])+' '+f1(a[1]);}
+    return 'M'+p(Lt)+' Q'+p(c1)+' '+p(Lw)+' Q'+p(cl)+' '+p(Lh)+' Q'+p(cb)+' '+p(Rh)+' Q'+p(cr)+' '+p(Rw)+' Q'+p(c2)+' '+p(Rt)+' Q'+p(ct)+' '+p(Lt)+' Z';
+  }
+  function fig(o){
+    var out='<line x1="8" y1="153" x2="192" y2="153" stroke="'+SOFT+'" stroke-width="1" stroke-dasharray="6 3"></line>';
+    if(o.center) out+='<line x1="100" y1="4" x2="100" y2="156" stroke="'+SOFT+'" stroke-width=".8" stroke-dasharray="4 3" opacity=".7"></line>';
+    if(o.eq) out+=outlined(o.eq,SOFT,BG,2);
+    if(o.eqShapes) out+=o.eqShapes;
+    out+='<g stroke-dasharray="3 2.5">'+ghostLines(o.ghost||[])+'</g>';
+    if(o.ghostHead) out+=circ(o.ghostHead[0],o.ghostHead[1],10,'none',SOFT,1.1,true);
+    if(o.ghostExtra) out+=o.ghostExtra;
+    var tw=o.side?[12,10,12]:[18,12,14];
+    var farD=(o.far||[]).map(limbD);
+    farD.forEach(function(d){out+=pth(d,'none',SOFT,2.4);});
+    farD.forEach(function(d){out+=pth(d,BG,'none',0);});
+    var torso=null, bodyD=[];
+    (o.body||[]).forEach(function(s){if(s[4]===22){torso=s;}else{bodyD.push(limbD(s));}});
+    if(torso){bodyD.unshift(torsoD(torso,tw));bodyD.push(limbD([torso[0],torso[1],o.head[0],o.head[1],8]));}
+    var workD=(o.work||[]).map(limbD);
+    var ang=torso?Math.atan2(torso[3]-torso[1],torso[2]-torso[0])*180/Math.PI-90:0;
+    var headO='<ellipse cx="'+o.head[0]+'" cy="'+o.head[1]+'" rx="9" ry="10.5" transform="rotate('+ang.toFixed(1)+' '+o.head[0]+' '+o.head[1]+')" ';
+    bodyD.concat(workD).forEach(function(d){out+=pth(d,'none',LN,2.6);});
+    out+=headO+'fill="none" stroke="'+LN+'" stroke-width="2.6"></ellipse>';
+    bodyD.forEach(function(d){out+=pth(d,BG,'none',0);});
+    workD.forEach(function(d){out+=pth(d,WORK,'none',0);});
+    out+=headO+'fill="'+BG+'" stroke="none"></ellipse>';
+    var all=(o.body||[]).filter(function(s){return s[4]!==22;}).concat(o.work||[]);
+    if(o.eqTop) out+=outlined(o.eqTop,SOFT,BG,2);
+    out+=joints(all.filter(function(s){return s[4]>7;}));
+    if(o.top) out+=o.top;
+    return out;
+  }
+  var STAND=[[93,100,90,126,13],[90,126,88,150,12],[107,100,110,126,13],[110,126,112,150,12],[100,58,100,100,22]];
+  var SIDE_FAR=[[98,88,102,118,13],[102,118,104,148,12]];
+  var SIDE=[[100,40,98,88,22],[98,88,96,118,13],[96,118,96,148,12],[96,149,110,149,7]];
+  var TOWER=[[30,26,170,26,6],[34,26,34,152,5],[166,26,166,152,5]];
+  var HANG=[[100,60,100,100],[94,100,94,140],[106,100,106,140]];
+  var TOPB=[[94,74,93,98,13],[93,98,92,114,12],[106,74,107,98,13],[107,98,108,114,12],[100,34,100,76,22]];
+  var CURLARW=CRV('M 126 96 Q 142 76 132 58','M 126 64 L 131 55 L 139 61');
+  var ART={
+    pullup:fig({eq:TOWER,ghost:HANG.concat([[84,62,72,44],[72,44,66,28],[116,62,128,44],[128,44,134,28]]),ghostHead:[100,46],
+      body:TOPB,work:[[84,38,70,52,11],[70,52,66,28,10],[116,38,130,52,11],[130,52,134,28,10]],head:[100,16],top:UP(182,96,44)}),
+    chinup:fig({eq:TOWER,ghost:HANG.concat([[88,62,86,45],[86,45,84,28],[112,62,114,45],[114,45,116,28]]),ghostHead:[100,46],
+      body:TOPB,work:[[86,38,76,56,11],[76,56,84,28,10],[114,38,124,56,11],[124,56,116,28,10]],head:[100,16],top:UP(182,96,44)}),
+    dips:fig({side:true,eq:[[150,72,150,152,5]],ghost:[[94,106,92,130],[92,130,78,140],[106,62,94,106],[106,62,84,58],[84,58,100,72]],ghostHead:[111,45],
+      far:[[92,86,94,110,13],[94,110,82,124,12]],body:[[98,40,90,86,22],[90,86,88,112,13],[88,112,74,122,12]],
+      work:[[98,42,99,57,11],[99,57,100,72,10]],head:[101,22],eqTop:[[66,72,150,72,6]],top:UP(174,112,52)}),
+    row:fig({eqShapes:rect(132,99,52,53,'none',SOFT,1.2,3),ghost:[[120,76,121,98],[121,98,122,118]],ghostExtra:DB(122,122,8,true),
+      far:[[64,90,80,120,13],[80,120,84,150,12],[120,76,136,88,11],[136,88,150,99,10]],
+      side:true,body:[[120,74,64,90,22],[64,90,68,120,13],[68,120,60,150,12]],work:[[120,76,100,62,11],[100,62,106,84,10]],head:[137,68],
+      top:DB(106,88)+UP(90,130,90)}),
+    press:fig({center:true,ghost:[[84,60,70,64],[70,64,72,42],[116,60,130,64],[130,64,128,42]],ghostExtra:HD(72,42,true)+HD(128,42,true),
+      body:STAND,work:[[84,60,78,36,11],[78,36,84,16,10],[116,60,122,36,11],[122,36,116,16,10]],head:[100,40],
+      top:HD(84,14)+HD(116,14)+UP(176,74,24)}),
+    lateral:fig({center:true,ghost:[[84,60,81,82],[81,82,79,102],[116,60,119,82],[119,82,121,102]],ghostExtra:DB(79,106,7,true)+DB(121,106,7,true),
+      body:STAND,work:[[84,60,62,62,11],[62,62,42,64,10],[116,60,138,62,11],[138,62,158,64,10]],head:[100,40],
+      top:DB(38,64,7)+DB(162,64,7)+CRV('M 66 112 Q 42 108 36 88','M 31 95 L 36 86 L 42 94')+CRV('M 134 112 Q 158 108 164 88','M 158 94 L 164 86 L 169 95')}),
+    hammer:fig({ghost:[[100,42,100,68],[100,68,100,90]],ghostExtra:VD(100,94,true),side:true,far:SIDE_FAR,body:SIDE,
+      work:[[100,42,99,68,11],[99,68,114,50,10]],head:[101,22],top:VD(116,47)+CURLARW}),
+    curl:fig({ghost:[[100,42,100,68],[100,68,100,90]],ghostExtra:DB(100,94,8,true),side:true,far:SIDE_FAR,body:SIDE,
+      work:[[100,42,99,68,11],[99,68,114,50,10]],head:[101,22],top:DB(116,47)+CURLARW}),
+    triceps:fig({ghost:[[98,76,95,48],[95,48,78,62]],ghostExtra:VD(76,64,true),side:true,far:[[98,112,101,132,13],[101,132,103,148,12]],
+      body:[[100,74,98,112,22],[98,112,96,132,13],[96,132,96,148,12],[96,149,110,149,7]],work:[[98,76,95,48,11],[95,48,94,24,10]],head:[102,57],
+      top:VD(94,15)+CRV('M 64 58 Q 60 30 76 20','M 69 18 L 79 18 L 76 27')}),
+    knee:fig({side:true,eq:[[150,72,150,152,5]],ghost:[[96,86,96,112],[96,112,94,136]],far:[[100,84,122,62,13],[122,62,116,90,12]],
+      body:[[98,40,99,84,22],[98,42,99,57,11],[99,57,100,72,10]],work:[[99,84,126,58,13],[126,58,120,86,12]],head:[99,22],
+      eqTop:[[66,72,150,72,6]],top:CRV('M 108 136 Q 146 126 142 82','M 136 90 L 142 80 L 148 90')}),
+    highrow:fig({ghost:[[118,64,119,88],[119,88,120,108]],ghostExtra:DB(120,112,8,true),far:[[70,92,86,120,13],[86,120,88,150,12]],
+      side:true,body:[[118,62,70,92,22],[70,92,80,120,13],[80,120,72,150,12]],work:[[118,64,104,42,11],[104,42,120,58,10]],head:[133,52],
+      top:DB(122,60)+CRV('M 144 114 Q 158 92 148 72','M 143 79 L 147 70 L 155 76')}),
+    pushhigh:fig({side:true,eqShapes:rect(10,104,52,48,'none',SOFT,1.2,3)+rect(124,140,20,11,'none',SOFT,1.2,3),
+      ghost:[[84,114,60,108],[60,108,38,100],[130,126,84,114],[130,126,110,118],[110,118,134,140]],ghostHead:[147,131],
+      body:[[86,100,60,100,13],[60,100,38,100,12],[133,98,86,100,22]],work:[[133,100,133,120,11],[133,120,134,140,10]],head:[151,97],
+      top:UP(174,138,92)})
+  };
+
+  /* ---------- schema ---------- */
+  var EX={
+    pullup:{cat:'pull',tag:'Trekken',name:'Pull-ups',sets:4,reps:'max − 1–2',cue:'Bovenhandse greep · power tower'},
+    chinup:{cat:'pull',tag:'Trekken',name:'Chin-ups',sets:4,reps:'max − 1–2',cue:'Onderhandse greep · power tower'},
+    dips4:{art:'dips',cat:'push',tag:'Duwen',name:'Dips',sets:4,reps:'8–15',cue:'Power tower · licht voorover leunen'},
+    dips3:{art:'dips',cat:'push',tag:'Duwen',name:'Dips',sets:3,reps:'8–15',cue:'Power tower · licht voorover leunen'},
+    row:{cat:'pull',tag:'Trekken',name:'Dumbbell row',sets:4,reps:'10–15 per arm',cue:'Langzaam: 1 s op · 1 s vast · 3 s neer'},
+    press:{cat:'push',tag:'Duwen',name:'Shoulder press',sets:4,reps:'10–15',cue:'Staand of zittend · vaste 7,5 kg'},
+    lat4:{art:'lateral',cat:'iso',tag:'Schouders',name:'Lateral raises',sets:4,reps:'12–20',cue:'Vaste 7,5 kg · gecontroleerd'},
+    lat3:{art:'lateral',cat:'iso',tag:'Schouders',name:'Lateral raises',sets:3,reps:'12–20',cue:'Vaste 7,5 kg · gecontroleerd'},
+    triceps:{cat:'iso',tag:'Armen',name:'Triceps extension',sets:4,reps:'10–15',cue:'Eén dumbbell, beide handen · boven je hoofd'},
+    hammer:{cat:'iso',tag:'Armen',name:'Hammer curl',sets:3,reps:'10–15',cue:'Duimen omhoog'},
+    curl:{cat:'iso',tag:'Armen',name:'Dumbbell curl',sets:3,reps:'10–15',cue:'Handpalmen omhoog'},
+    knee:{cat:'iso',tag:'Core',name:'Knee raises',sets:3,reps:'8–15',cue:'Op de dipgrepen · knieën naar je borst'},
+    highrow:{cat:'pull',tag:'Trekken',name:'High row',sets:4,reps:'12–20',cue:'Wijde ellebogen, naar je gezicht'},
+    pushhigh:{cat:'push',tag:'Duwen',name:'Push-ups, voeten hoog',sets:4,reps:'10–20',cue:'Handen op de grepen · voeten op het blok'}
+  };
+  var PLAN={
+    a:{letter:'A',cat:'push',blocks:[['pullup','dips4'],['row','press'],['lat4','triceps'],['hammer','knee']]},
+    b:{letter:'B',cat:'pull',blocks:[['chinup','pushhigh'],['row','dips3'],['highrow','lat3'],['curl','knee']]}
+  };
+  function buildSteps(key){
+    var steps=[];
+    PLAN[key].blocks.forEach(function(pair,bi){
+      var rounds=Math.max(EX[pair[0]].sets,EX[pair[1]].sets);
+      for(var r=1;r<=rounds;r++){
+        pair.forEach(function(id){ if(EX[id].sets>=r) steps.push({t:'ex',id:id,block:bi,round:r,rounds:rounds}); });
+        steps.push({t:'rest',block:bi,round:r,rounds:rounds,lastOfBlock:r===rounds});
+      }
+    });
+    steps.pop();
+    return steps;
+  }
+
+  /* ---------- opslag ---------- */
+  var KS='trainingsapp-state', KR='trainingsapp-rest';
+  function load(k){try{var v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}}
+  function store(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+  function drop(k){try{localStorage.removeItem(k);}catch(e){}}
+  var restSec=load(KR)||45;
+  var state=load(KS);
+
+  /* ---------- geluid, trillen, scherm aan ---------- */
+  var ac=null, wake=null;
+  function unlockAudio(){try{if(!ac){var A=window.AudioContext||window.webkitAudioContext;if(A)ac=new A();}if(ac&&ac.state==='suspended')ac.resume();}catch(e){}}
+  function beep(freq,dur,when){try{if(!ac)return;var t=ac.currentTime+(when||0),o=ac.createOscillator(),g=ac.createGain();o.frequency.value=freq;o.type='sine';g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.4,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+dur+.02);}catch(e){}}
+  function buzz(p){try{if(navigator.vibrate)navigator.vibrate(p);}catch(e){}}
+  function keepAwake(){try{if('wakeLock' in navigator&&document.visibilityState==='visible'){navigator.wakeLock.request('screen').then(function(w){wake=w;}).catch(function(){});}}catch(e){}}
+  function releaseAwake(){try{if(wake){wake.release();wake=null;}}catch(e){}}
+  document.addEventListener('visibilitychange',function(){if(state&&document.visibilityState==='visible')keepAwake();});
+
+  /* ---------- schermen ---------- */
+  var app=document.getElementById('app'), timer=null, endAt=0, lastWhole=-1;
+  var ICON_X='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>';
+  var ICON_BACK='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>';
+  var ICON_CHECK='<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"></path></svg>';
+  function svg(id,alt){var e=EX[id];return '<svg viewBox="0 0 200 160" role="img" aria-label="'+(alt||e.name)+'">'+ART[e.art||id]+'</svg>';}
+  function stopTimer(){if(timer){clearInterval(timer);timer=null;}}
+  function fmt(ms){var s=Math.max(0,Math.round(ms/1000)),m=Math.floor(s/60);return m+':'+String(s%60).padStart(2,'0');}
+
+  function renderStart(){
+    stopTimer();
+    var steps=state?buildSteps(state.key):null;
+    var resume='';
+    if(state&&state.i<steps.length){
+      var exTotal=steps.filter(function(s){return s.t==='ex';}).length;
+      var exDone=steps.slice(0,state.i).filter(function(s){return s.t==='ex';}).length;
+      resume='<button type="button" class="resume" data-act="resume">Verder met training '+PLAN[state.key].letter+' · '+exDone+' van '+exTotal+' afgevinkt</button>';
+    }
+    function list(key){return PLAN[key].blocks.map(function(p){return '<li>'+EX[p[0]].name+' + '+EX[p[1]].name+'</li>';}).join('');}
+    app.innerHTML='<p class="eyebrow">Bovenlichaam · dumbbells + power tower</p>'
+      +'<h1 class="h1">Kies je training</h1>'+resume
+      +'<button type="button" class="choice push" data-act="start" data-key="a"><span class="big">Training A</span><ol>'+list('a')+'</ol></button>'
+      +'<button type="button" class="choice pull" data-act="start" data-key="b"><span class="big">Training B</span><ol>'+list('b')+'</ol></button>'
+      +'<div class="setting"><b>Rust na elke ronde</b><div class="stepper"><button type="button" class="round" data-act="rest-" aria-label="Rust 15 seconden korter">−</button><output id="restOut">'+restSec+' s</output><button type="button" class="round" data-act="rest+" aria-label="Rust 15 seconden langer">+</button></div></div>';
+  }
+
+  function topBar(step,steps){
+    var exAll=steps.filter(function(s){return s.t==='ex';}).length;
+    var exDone=steps.slice(0,state.i).filter(function(s){return s.t==='ex';}).length;
+    var pct=Math.round(exDone/exAll*100);
+    return '<div class="bar"><button type="button" class="icon-btn" data-act="back" aria-label="Vorige stap">'+ICON_BACK+'</button>'
+      +'<span class="meta">Training '+PLAN[state.key].letter+' · superset '+(step.block+1)+' · ronde '+step.round+'/'+step.rounds+'</span>'
+      +'<button type="button" class="icon-btn" data-act="stop" aria-label="Pauzeren en terug naar start">'+ICON_X+'</button></div>'
+      +'<div class="progress" role="progressbar" aria-valuenow="'+pct+'" aria-valuemin="0" aria-valuemax="100"><i style="width:'+pct+'%"></i></div>';
+  }
+  function nextEx(steps,from){for(var j=from;j<steps.length;j++){if(steps[j].t==='ex')return steps[j];}return null;}
+
+  function renderEx(step,steps){
+    var e=EX[step.id], nx=steps[state.i+1], nextLine='';
+    if(!nx) nextLine='<div class="next"><div><div class="lbl">Hierna</div><div class="nm">Einde training</div></div></div>';
+    else if(nx.t==='rest'){var ne=nextEx(steps,state.i+1);nextLine='<div class="next">'+(ne?'<div class="ill sm">'+svg(ne.id)+'</div>':'')+'<div><div class="lbl">Hierna rust, dan</div><div class="nm">'+(ne?EX[ne.id].name:'')+'</div></div></div>';}
+    else nextLine='<div class="next"><div class="ill sm">'+svg(nx.id)+'</div><div><div class="lbl">Hierna direct</div><div class="nm">'+EX[nx.id].name+'</div></div></div>';
+    app.innerHTML=topBar(step,steps)
+      +'<div class="ill lg">'+svg(step.id)+'</div>'
+      +'<div class="ex '+e.cat+'"><span class="tag">'+e.tag+'</span><h1 class="name">'+e.name+'</h1>'
+      +'<div class="dose"><b>Set '+step.round+'</b><span>'+e.reps+'</span></div><p class="cue">'+e.cue+'</p></div>'
+      +'<div class="spacer"></div>'+nextLine
+      +'<button type="button" class="primary" data-act="done">'+ICON_CHECK+'Gedaan</button>';
+  }
+
+  function renderRest(step,steps){
+    var ne=nextEx(steps,state.i+1);
+    var label=step.lastOfBlock?'Superset '+(step.block+1)+' klaar':'Ronde '+step.round+' klaar';
+    var C=2*Math.PI*104;
+    app.innerHTML=topBar(step,steps)
+      +'<p class="eyebrow" style="text-align:center;margin-top:8px">'+label+'</p>'
+      +'<div class="ring"><svg viewBox="0 0 240 240" aria-hidden="true"><circle cx="120" cy="120" r="104" fill="none" stroke="var(--panel)" stroke-width="12"></circle><circle id="arc" cx="120" cy="120" r="104" fill="none" stroke="var(--ink)" stroke-width="12" stroke-linecap="round" stroke-dasharray="'+C.toFixed(1)+'" stroke-dashoffset="0"></circle></svg>'
+      +'<div class="num"><b id="left" aria-live="polite">'+restSec+'</b><span>Rust</span></div></div>'
+      +'<div class="row"><button type="button" class="secondary" data-act="minus">− 15 s</button><button type="button" class="secondary" data-act="plus">+ 15 s</button></div>'
+      +'<div class="spacer"></div>'
+      +(ne?'<div class="next"><div class="ill sm">'+svg(ne.id)+'</div><div><div class="lbl">Hierna</div><div class="nm">'+EX[ne.id].name+'</div></div></div>':'')
+      +'<button type="button" class="primary" data-act="skip">Rust overslaan</button>';
+    var total=restSec*1000; endAt=Date.now()+total; lastWhole=-1;
+    var arc=document.getElementById('arc'), left=document.getElementById('left');
+    function tick(){
+      var ms=endAt-Date.now(), whole=Math.ceil(ms/1000);
+      if(whole!==lastWhole){lastWhole=whole;left.textContent=Math.max(0,whole);if(whole<=3&&whole>0)beep(660,.12);}
+      var frac=Math.min(1,Math.max(0,1-ms/total));
+      arc.setAttribute('stroke-dashoffset',(C*frac).toFixed(1));
+      if(ms<=0){stopTimer();beep(880,.18);beep(880,.18,.25);buzz([250,120,250]);advance();}
+    }
+    app.dataset.total=total;
+    timer=setInterval(tick,200); tick();
+    app._adjust=function(d){endAt+=d*1000; total=Math.max(1000,total+d*1000); tick();};
+  }
+
+  function renderEnd(){
+    stopTimer(); releaseAwake();
+    var steps=buildSteps(state.key), exAll=steps.filter(function(s){return s.t==='ex';}).length;
+    var dur=fmt(Date.now()-state.started), key=state.key;
+    drop(KS); state=null;
+    app.innerHTML='<p class="eyebrow">Goed gedaan</p><h1 class="h1">Training '+PLAN[key].letter+' voltooid</h1>'
+      +'<div class="stats"><div class="stat"><b>'+dur+'</b><span>minuten getraind</span></div><div class="stat"><b>'+exAll+'</b><span>sets afgevinkt</span></div></div>'
+      +'<p class="cue">Volgende keer: training '+(key==='a'?'B':'A')+'.</p><div class="spacer"></div>'
+      +'<button type="button" class="primary" data-act="home">Terug naar start</button>';
+    beep(660,.15);beep(880,.15,.18);beep(1100,.25,.36);
+  }
+
+  function show(){
+    stopTimer();
+    if(!state){renderStart();return;}
+    var steps=buildSteps(state.key), step=steps[state.i];
+    if(!step){renderEnd();return;}
+    if(step.t==='ex')renderEx(step,steps); else renderRest(step,steps);
+    window.scrollTo(0,0);
+  }
+  function advance(){state.i++;store(KS,state);show();}
+
+  app.addEventListener('click',function(ev){
+    var b=ev.target.closest('[data-act]'); if(!b)return;
+    var act=b.getAttribute('data-act');
+    unlockAudio();
+    if(act==='start'){state={key:b.getAttribute('data-key'),i:0,started:Date.now()};store(KS,state);keepAwake();show();}
+    else if(act==='resume'){keepAwake();show();}
+    else if(act==='rest-'||act==='rest+'){restSec=Math.min(180,Math.max(15,restSec+(act==='rest+'?15:-15)));store(KR,restSec);document.getElementById('restOut').textContent=restSec+' s';}
+    else if(act==='done'){buzz(40);advance();}
+    else if(act==='skip'){stopTimer();advance();}
+    else if(act==='minus'&&app._adjust){app._adjust(-15);}
+    else if(act==='plus'&&app._adjust){app._adjust(15);}
+    else if(act==='back'){var steps=buildSteps(state.key);var j=state.i-1;while(j>0&&steps[j].t==='rest')j--;state.i=Math.max(0,j);store(KS,state);show();}
+    else if(act==='stop'){stopTimer();releaseAwake();renderStart();}
+    else if(act==='home'){renderStart();}
+  });
+
+  renderStart();
+})();
+</script>
+<script>
+if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}
+</script>
+</body>
+</html>
