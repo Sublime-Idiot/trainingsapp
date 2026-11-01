@@ -65,7 +65,16 @@ button:focus-visible{outline:3px solid var(--pull);outline-offset:2px}
 .stepper{display:flex;align-items:center;gap:6px}
 .stepper output{min-width:64px;text-align:center;font-family:var(--display);font-weight:700;font-size:26px;font-variant-numeric:tabular-nums}
 .round{appearance:none;width:48px;height:48px;border-radius:24px;border:1.5px solid var(--ink);background:transparent;font-size:24px;line-height:1;cursor:pointer}
-.resume{appearance:none;width:100%;border:0;border-radius:14px;background:var(--ok);color:#fff;padding:16px 18px;text-align:left;font-weight:600;font-size:17px;cursor:pointer}
+.resume{display:flex;align-items:stretch;border-radius:14px;background:var(--ok);color:#fff}
+.resume-go{appearance:none;flex:1;border:0;background:none;color:inherit;padding:16px 18px;text-align:left;font-weight:600;font-size:17px;cursor:pointer}
+.resume-x{appearance:none;width:56px;border:0;border-left:1px solid rgba(255,255,255,.3);background:none;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.resume-x svg{stroke:#fff}
+.sheet-bg{position:fixed;inset:0;z-index:10;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center;padding:16px}
+.sheet{width:100%;max-width:528px;background:var(--surface);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:8px;margin-bottom:env(safe-area-inset-bottom,0px)}
+.sheet-h{margin:0 0 8px;font-family:var(--display);font-weight:800;font-size:32px;text-transform:uppercase}
+.sheet-note{margin:0 0 10px;text-align:center;font-size:14px;color:var(--muted)}
+.danger{appearance:none;width:100%;min-height:56px;border:1.5px solid var(--push);border-radius:16px;background:transparent;color:var(--push);font-family:var(--display);font-weight:800;font-size:24px;text-transform:uppercase;cursor:pointer}
+.link{appearance:none;border:0;background:none;min-height:44px;font-weight:600;color:var(--muted);cursor:pointer}
 .bar{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .bar .meta{font-size:14px;font-weight:600;color:var(--muted)}
 .icon-btn{appearance:none;width:44px;height:44px;border-radius:22px;border:1px solid var(--line);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer}
@@ -284,7 +293,8 @@ button:focus-visible{outline:3px solid var(--pull);outline-offset:2px}
     if(state&&state.i<steps.length){
       var exTotal=steps.filter(function(s){return s.t==='ex';}).length;
       var exDone=steps.slice(0,state.i).filter(function(s){return s.t==='ex';}).length;
-      resume='<button type="button" class="resume" data-act="resume">Verder met training '+PLAN[state.key].letter+' · '+exDone+' van '+exTotal+' afgevinkt</button>';
+      resume='<div class="resume"><button type="button" class="resume-go" data-act="resume">Verder met training '+PLAN[state.key].letter+' · '+exDone+' van '+exTotal+' afgevinkt</button>'
+        +'<button type="button" class="resume-x" data-act="discard" aria-label="Opgeslagen voortgang wissen">'+ICON_X+'</button></div>';
     }
     function list(key){return PLAN[key].blocks.map(function(p){return '<li>'+EX[p[0]].name+' + '+EX[p[1]].name+'</li>';}).join('');}
     function card(key){
@@ -321,7 +331,7 @@ button:focus-visible{outline:3px solid var(--pull);outline-offset:2px}
     var pct=Math.round(exDone/exAll*100);
     return '<div class="bar"><button type="button" class="icon-btn" data-act="back" aria-label="Vorige stap">'+ICON_BACK+'</button>'
       +'<span class="meta">Training '+PLAN[state.key].letter+' · superset '+(step.block+1)+' · ronde '+step.round+'/'+step.rounds+'</span>'
-      +'<button type="button" class="icon-btn" data-act="stop" aria-label="Pauzeren en terug naar start">'+ICON_X+'</button></div>'
+      +'<button type="button" class="icon-btn" data-act="stop" aria-label="Training stoppen">'+ICON_X+'</button></div>'
       +'<div class="progress" role="progressbar" aria-valuenow="'+pct+'" aria-valuemin="0" aria-valuemax="100"><i style="width:'+pct+'%"></i></div>';
   }
   function nextEx(steps,from){for(var j=from;j<steps.length;j++){if(steps[j].t==='ex')return steps[j];}return null;}
@@ -363,7 +373,25 @@ button:focus-visible{outline:3px solid var(--pull);outline-offset:2px}
     app.dataset.total=total;
     timer=setInterval(tick,200); tick();
     app._adjust=function(d){endAt+=d*1000; total=Math.max(1000,total+d*1000); tick();};
+    /* rust staat stil zolang het stopmenu open is */
+    var held=0;
+    app._hold=function(){stopTimer();held=endAt-Date.now();};
+    app._release=function(){endAt=Date.now()+held;timer=setInterval(tick,200);tick();};
   }
+
+  function openStopMenu(){
+    if(document.getElementById('stopMenu'))return;
+    if(app._hold)app._hold();
+    var d=document.createElement('div');d.className='sheet-bg';d.id='stopMenu';d.setAttribute('data-act','cancel');
+    d.innerHTML='<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="stopTitle">'
+      +'<h2 class="sheet-h" id="stopTitle">Training stoppen?</h2>'
+      +'<button type="button" class="primary" data-act="pause">Pauzeren</button><p class="sheet-note">Voortgang blijft bewaard</p>'
+      +'<button type="button" class="danger" data-act="abort">Training afbreken</button><p class="sheet-note">Voortgang wordt gewist</p>'
+      +'<button type="button" class="link" data-act="cancel">Annuleren</button></div>';
+    app.appendChild(d);
+    d.querySelector('[data-act=pause]').focus();
+  }
+  function closeStopMenu(){var d=document.getElementById('stopMenu');if(d){d.remove();if(app._release)app._release();}}
 
   function renderEnd(){
     stopTimer(); releaseAwake();
@@ -378,7 +406,7 @@ button:focus-visible{outline:3px solid var(--pull);outline-offset:2px}
   }
 
   function show(){
-    stopTimer();
+    stopTimer(); app._hold=app._release=null;
     if(!state){renderStart();return;}
     var steps=buildSteps(state.key), step=steps[state.i];
     if(!step){renderEnd();return;}
@@ -387,8 +415,11 @@ button:focus-visible{outline:3px solid var(--pull);outline-offset:2px}
   }
   function advance(){state.i++;store(KS,state);show();}
 
+  document.addEventListener('keydown',function(ev){if(ev.key==='Escape')closeStopMenu();});
   app.addEventListener('click',function(ev){
     var b=ev.target.closest('[data-act]'); if(!b)return;
+    /* binnen het menuvak telt alleen een tik op een knop, niet op de achtergrond eromheen */
+    if(b.id==='stopMenu'&&ev.target!==b)return;
     var act=b.getAttribute('data-act');
     unlockAudio();
     if(act==='start'){state={key:b.getAttribute('data-key'),i:0,started:Date.now()};store(KS,state);keepAwake();show();}
@@ -400,7 +431,11 @@ button:focus-visible{outline:3px solid var(--pull);outline-offset:2px}
     else if(act==='minus'&&app._adjust){app._adjust(-15);}
     else if(act==='plus'&&app._adjust){app._adjust(15);}
     else if(act==='back'){var steps=buildSteps(state.key);var j=state.i-1;while(j>0&&steps[j].t==='rest')j--;state.i=Math.max(0,j);store(KS,state);show();}
-    else if(act==='stop'){stopTimer();releaseAwake();renderStart();}
+    else if(act==='stop'){openStopMenu();}
+    else if(act==='cancel'){closeStopMenu();}
+    else if(act==='pause'){stopTimer();releaseAwake();renderStart();}
+    else if(act==='abort'){stopTimer();releaseAwake();drop(KS);state=null;renderStart();}
+    else if(act==='discard'){drop(KS);state=null;renderStart();}
     else if(act==='home'){renderStart();}
   });
 
