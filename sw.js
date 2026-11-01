@@ -1,13 +1,16 @@
 // Service worker: bewaart de app op je telefoon zodat hij offline werkt.
 // Verhoog het versienummer bij elke wijziging, dan haalt de app de nieuwe versie op.
-const VERSION = 'trainingsapp-v1';
+const VERSION = 'trainingsapp-v2';
 const FILES = [
   './',
   './index.html',
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png',
-  './icons/apple-touch-icon.png'
+  './icons/apple-touch-icon.png',
+  './fonts/big-shoulders-stencil-display-700.woff2',
+  './fonts/big-shoulders-stencil-display-800.woff2',
+  './fonts/architects-daughter-400.woff2'
 ];
 
 self.addEventListener('install', (event) => {
@@ -29,19 +32,7 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
 
-  // Lettertypen van Google: eerste keer ophalen en bewaren, daarna uit de opslag.
-  if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
-    event.respondWith(
-      caches.open(VERSION).then((cache) =>
-        cache.match(req).then((hit) =>
-          hit || fetch(req).then((res) => { cache.put(req, res.clone()); return res; })
-        )
-      )
-    );
-    return;
-  }
-
-  // Eigen bestanden: uit de opslag, anders van internet.
+  // Eigen bestanden (ook de lettertypen): uit de opslag, anders van internet.
   if (url.origin === self.location.origin) {
     event.respondWith(caches.match(req).then((hit) => hit || fetch(req)));
   }
