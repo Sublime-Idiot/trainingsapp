@@ -1,6 +1,6 @@
 // Service worker: bewaart de app op je telefoon zodat hij offline werkt.
 // Verhoog het versienummer bij elke wijziging, dan haalt de app de nieuwe versie op.
-const VERSION = 'trainingsapp-v2';
+const VERSION = 'trainingsapp-v3';
 const FILES = [
   './',
   './index.html',

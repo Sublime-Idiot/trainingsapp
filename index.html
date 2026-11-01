@@ -446,7 +446,12 @@ button:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
 })();
 </script>
 <script>
-if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}
+if('serviceWorker' in navigator){
+  /* nieuwe versie binnen: één keer herladen, zodat je die meteen ziet (niet bij de allereerste installatie) */
+  var hadController=!!navigator.serviceWorker.controller, reloaded=false;
+  navigator.serviceWorker.addEventListener('controllerchange',function(){if(hadController&&!reloaded){reloaded=true;location.reload();}});
+  window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});
+}
 </script>
 </body>
 </html>
