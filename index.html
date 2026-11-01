@@ -83,13 +83,21 @@ button:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
 .next{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:4px;padding:10px 12px}
 .next .lbl{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .next .nm{font-family:var(--display);font-weight:700;font-size:24px;line-height:1.05;text-transform:uppercase}
-.ss{display:flex;flex-direction:column;gap:10px;padding-top:14px;border-top:1px solid var(--line)}
-.ss-h{margin:0;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.ss-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-.ss-ex{display:flex;flex-direction:column;gap:4px}
-.ss-name{margin:0;font-family:var(--display);font-weight:800;font-size:26px;line-height:1;text-transform:uppercase}
-.ss-dose{margin:0;font-family:var(--display);font-weight:700;font-size:21px}
-.ss-ex .cue{font-size:14px;line-height:1.35}
+/* Overzicht: opbouw als de poster (nummer + superset-label, twee kaarten met wisselpijl ertussen), in blauwdrukstijl */
+.ss{display:flex;flex-direction:column;gap:10px}
+.ss-head{display:flex;align-items:baseline;gap:12px}
+.ss-num{font-family:var(--display);font-weight:800;font-size:40px;line-height:1}
+.ss-h{font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ss-pair{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:6px;align-items:stretch}
+.ss-ex{min-width:0;border:1px solid var(--line);border-top:3px solid var(--cat);border-radius:4px;padding:10px;display:flex;flex-direction:column;gap:4px}
+.swap{align-self:center;width:28px;height:28px;border-radius:14px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center}
+.swap svg{stroke:var(--acc)}
+.ss-name{margin:0;font-family:var(--display);font-weight:800;font-size:24px;line-height:1;text-transform:uppercase;text-wrap:balance}
+.ss-dose{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.ss-dose b{font-family:var(--display);font-weight:800;font-size:30px;line-height:1}
+.ss-dose span{font-family:var(--display);font-weight:700;font-size:19px}
+.ss-ex .cue{font-size:13px;line-height:1.35}
+@media (min-width:480px){.ss-pair{gap:12px}.ss-ex{padding:14px 16px}.swap{width:40px;height:40px;border-radius:20px}.swap svg{width:20px;height:20px}.ss-name{font-size:30px}.ss-dose b{font-size:38px}.ss-dose span{font-size:22px}.ss-ex .cue{font-size:15px}}
 /* Timer: de cijfers schalen mee met de ringbreedte (cqw = procent van de breedte van .ring) */
 .ring{position:relative;width:min(72vw,260px);aspect-ratio:1;max-width:100%;margin:8px auto 0;container-type:inline-size}
 .ring svg{width:100%;height:100%;transform:rotate(-90deg)}
@@ -276,6 +284,7 @@ button:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
   var ICON_X='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>';
   var ICON_BACK='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>';
   var ICON_CHECK='<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"></path></svg>';
+  var ICON_SWAP='<div class="swap" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h15l-4-4"></path><path d="M20 16H5l4 4"></path></svg></div>';
   function svg(id,alt){var e=EX[id];return '<svg viewBox="0 0 200 160" role="img" aria-label="'+(alt||e.name)+'">'+ART[e.art||id]+'</svg>';}
   function stopTimer(){if(timer){clearInterval(timer);timer=null;}}
   function fmt(ms){var s=Math.max(0,Math.round(ms/1000)),m=Math.floor(s/60);return m+':'+String(s%60).padStart(2,'0');}
@@ -309,11 +318,11 @@ button:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
       +'<h1 class="h1">Training '+P.letter+'</h1>'
       +P.blocks.map(function(pair,bi){
         var rounds=Math.max(EX[pair[0]].sets,EX[pair[1]].sets);
-        return '<section class="ss"><p class="ss-h">Superset '+(bi+1)+' · '+rounds+' rondes</p><div class="ss-pair">'
-          +pair.map(function(id){var e=EX[id];
-            return '<div class="ss-ex '+e.cat+'"><div class="ill md">'+svg(id)+'</div><span class="tag">'+e.tag+'</span>'
-              +'<h2 class="ss-name">'+e.name+'</h2><p class="ss-dose">'+e.sets+' × '+e.reps+'</p><p class="cue">'+e.cue+'</p></div>';
-          }).join('')+'</div></section>';
+        return '<section class="ss"><div class="ss-head"><span class="ss-num">'+(bi+1)+'</span><span class="ss-h">Superset · '+rounds+' rondes</span></div>'
+          +'<div class="ss-pair">'+pair.map(function(id){var e=EX[id];
+            return '<article class="ss-ex '+e.cat+'"><div class="ill md">'+svg(id)+'</div><span class="tag">'+e.tag+'</span>'
+              +'<h2 class="ss-name">'+e.name+'</h2><div class="ss-dose"><b>'+e.sets+'×</b><span>'+e.reps+'</span></div><p class="cue">'+e.cue+'</p></article>';
+          }).join(ICON_SWAP)+'</div></section>';
       }).join('')
       +'<button type="button" class="primary" data-act="start" data-key="'+key+'">Start training</button>';
     window.scrollTo(0,0);
