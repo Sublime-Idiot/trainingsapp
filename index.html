@@ -211,22 +211,20 @@ button:focus-visible{outline:3px solid var(--pull);outline-offset:2px}
   var EX={
     pullup:{cat:'pull',tag:'Trekken',name:'Pull-ups',sets:4,reps:'max − 1–2',cue:'Bovenhandse greep · power tower'},
     chinup:{cat:'pull',tag:'Trekken',name:'Chin-ups',sets:4,reps:'max − 1–2',cue:'Onderhandse greep · power tower'},
-    dips4:{art:'dips',cat:'push',tag:'Duwen',name:'Dips',sets:4,reps:'8–15',cue:'Power tower · licht voorover leunen'},
-    dips3:{art:'dips',cat:'push',tag:'Duwen',name:'Dips',sets:3,reps:'8–15',cue:'Power tower · licht voorover leunen'},
+    dips:{cat:'push',tag:'Duwen',name:'Dips',sets:4,reps:'8–15',cue:'Power tower · licht voorover leunen'},
     row:{cat:'pull',tag:'Trekken',name:'Dumbbell row',sets:4,reps:'10–15 per arm',cue:'Langzaam: 1 s op · 1 s vast · 3 s neer'},
     press:{cat:'push',tag:'Duwen',name:'Shoulder press',sets:4,reps:'10–15',cue:'Staand of zittend · vaste 7,5 kg'},
-    lat4:{art:'lateral',cat:'iso',tag:'Schouders',name:'Lateral raises',sets:4,reps:'12–20',cue:'Vaste 7,5 kg · gecontroleerd'},
-    lat3:{art:'lateral',cat:'iso',tag:'Schouders',name:'Lateral raises',sets:3,reps:'12–20',cue:'Vaste 7,5 kg · gecontroleerd'},
+    lateral:{cat:'iso',tag:'Schouders',name:'Lateral raises',sets:4,reps:'12–20',cue:'Vaste 7,5 kg · gecontroleerd'},
     triceps:{cat:'iso',tag:'Armen',name:'Triceps extension',sets:4,reps:'10–15',cue:'Eén dumbbell, beide handen · boven je hoofd'},
-    hammer:{cat:'iso',tag:'Armen',name:'Hammer curl',sets:3,reps:'10–15',cue:'Duimen omhoog'},
-    curl:{cat:'iso',tag:'Armen',name:'Dumbbell curl',sets:3,reps:'10–15',cue:'Handpalmen omhoog'},
-    knee:{cat:'iso',tag:'Core',name:'Knee raises',sets:3,reps:'8–15',cue:'Op de dipgrepen · knieën naar je borst'},
+    hammer:{cat:'iso',tag:'Armen',name:'Hammer curl',sets:4,reps:'10–15',cue:'Duimen omhoog'},
+    curl:{cat:'iso',tag:'Armen',name:'Dumbbell curl',sets:4,reps:'10–15',cue:'Handpalmen omhoog'},
+    knee:{cat:'iso',tag:'Core',name:'Knee raises',sets:4,reps:'8–15',cue:'Op de dipgrepen · knieën naar je borst'},
     highrow:{cat:'pull',tag:'Trekken',name:'High row',sets:4,reps:'12–20',cue:'Wijde ellebogen, naar je gezicht'},
     pushhigh:{cat:'push',tag:'Duwen',name:'Push-ups, voeten hoog',sets:4,reps:'10–20',cue:'Handen op de grepen · voeten op het blok'}
   };
   var PLAN={
-    a:{letter:'A',cat:'push',blocks:[['pullup','dips4'],['row','press'],['lat4','triceps'],['hammer','knee']]},
-    b:{letter:'B',cat:'pull',blocks:[['chinup','pushhigh'],['row','dips3'],['highrow','lat3'],['curl','knee']]}
+    a:{letter:'A',cat:'push',blocks:[['pullup','dips'],['row','press'],['lateral','triceps'],['hammer','knee']]},
+    b:{letter:'B',cat:'pull',blocks:[['chinup','pushhigh'],['row','dips'],['highrow','lateral'],['curl','knee']]}
   };
   function buildSteps(key){
     var steps=[];
