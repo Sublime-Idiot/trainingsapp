@@ -1,6 +1,6 @@
 // Service worker: bewaart de app op je telefoon zodat hij offline werkt.
 // Verhoog het versienummer bij elke wijziging, dan haalt de app de nieuwe versie op.
-const VERSION = 'trainingsapp-v3';
+const VERSION = 'trainingsapp-v4';
 const FILES = [
   './',
   './index.html',
@@ -8,13 +8,18 @@ const FILES = [
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/apple-touch-icon.png',
+  './icons/icon.svg',
+  './icons/icon-maskable-512.png',
   './fonts/big-shoulders-stencil-display-700.woff2',
   './fonts/big-shoulders-stencil-display-800.woff2',
   './fonts/architects-daughter-400.woff2'
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(VERSION).then((cache) => cache.addAll(FILES)));
+  // 'reload': altijd vers van de server, niet uit de tijdelijke browsercache (anders kan een oud bestand in de nieuwe versie belanden).
+  event.waitUntil(caches.open(VERSION).then((cache) =>
+    cache.addAll(FILES.map((f) => new Request(f, { cache: 'reload' })))
+  ));
   self.skipWaiting();
 });
 
